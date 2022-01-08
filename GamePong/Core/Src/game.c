@@ -94,7 +94,7 @@ void update_player(uint16_t *buf) {
 			p1_y = p1_y + p1_speed;
 		}
 	}
-	if (buttons & B_GAME) {
+	if (buttons & B_PAUSE) {
 		score_p1 = 0;
 		score_p2 = 0;
 		p1_x = 3;
@@ -103,6 +103,9 @@ void update_player(uint16_t *buf) {
 		p2_y = 110;
 		HAL_Delay(1000);
 		game_init();
+	}
+	if (buttons & B_GAME) {
+		NVIC_SystemReset();
 	}
 	LCD_FillRect(buf, p1_x, p1_y, p1_width, p1_height, LCD_COLOR_WHITE);
 }

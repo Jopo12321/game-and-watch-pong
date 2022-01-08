@@ -62,7 +62,7 @@ MEMORY
 {
   RAM_EXEC (xrw)  : ORIGIN = 0x24000000, LENGTH = 128K
   RAM  (xrw)      : ORIGIN = 0x20000000, LENGTH = 128K
-  RAM2 (xrw)      : ORIGIN = 0x24020000, LENGTH = 896K
+  RAM2 (rw)      : ORIGIN = 0x24020000, LENGTH = 896K
 }
 
 /* Define output sections */

@@ -2,6 +2,8 @@
 
 My first homebrew game for Nintendo game and watch.
 
+![Pong game first picture](/gaw1.png)  
+![Pong game second picture](/gaw2.png)  
 
 The project is based and use some of the work done by:  
 https://github.com/ghidraninja/game-and-watch-base  

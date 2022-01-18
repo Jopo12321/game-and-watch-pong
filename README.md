@@ -5,8 +5,8 @@ My first homebrew game for Nintendo game and watch.
 # Controls
 
 (UP, DOWN)   - Controlling the player  
-(PAUSE/SET)  - Restarting the game  
-(GAME)       - Restarting console / Return from homebrew  
+(GAME)       - Restarting the game  
+(POWER)      - Restarting console / Return from homebrew  
 
 # Pictures
 

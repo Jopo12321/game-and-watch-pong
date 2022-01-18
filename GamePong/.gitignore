@@ -1,5 +1,7 @@
 /Debug/
 /Drivers/
-/GamePong Debug.launch
-/RAM/
-/Release/
+*launch
+/Debug (RAM)/
+/Debug (ROM)/
+/Release (RAM)/
+/Release (ROM)/

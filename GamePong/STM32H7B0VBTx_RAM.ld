@@ -53,46 +53,174 @@
 ENTRY(Reset_Handler)
 
 /* Highest address of the user mode stack */
-_estack = 0x20020000;    /* end of RAM */
+_estack = _stack_top;    /* end of RAM */
+
 /* Generate a link error if heap and stack don't fit into RAM */
-_Min_Heap_Size = 0x200 ;      /* required amount of heap  */
-_Min_Stack_Size = 0x400 ; /* required amount of stack */
+_Heap_Size = 32 * 1024;     /* required amount of heap */
+
+_Stack_Redzone_Size = 256;  /* size of stack overflow protection */
+_Min_Stack_Size = 20 * 1024; /* required amount of stack */
+
+
+/* Useful for scripts */
+__NULLPTR_LENGTH__  = 0x100;
+__ITCMRAM_LENGTH__  = 64K;
+__DTCMRAM_LENGTH__  = 128K;
+__RAM_UC_LENGTH__   = 320K;
+__RAM_CORE_LENGTH__ = 1024K - __RAM_UC_LENGTH__;
+__AHBRAM_LENGTH__   = 128K;
+__FLASH_LENGTH__    = 128K;
+
+__EXTFLASH_START__  = 0x90000000;
+
+__RAM_START__       = 0x24000000;
+__RAM_UC_START__    = __RAM_START__;
+__RAM_CORE_START__  = __RAM_START__ + __RAM_UC_LENGTH__;
+
+/* saveflash.ld sets __SAVEFLASH_LENGTH__ */
+/*INCLUDE build/saveflash.ld*/
+__SAVEFLASH_LENGTH__ = 4096;
+
+/* saveflash.ld sets __SAVEFLASH_LENGTH__ */
+__CONFIGFLASH_LENGTH__ = 4096;
+
+__EXTFLASH_LENGTH__ = DEFINED(__EXTFLASH_TOTAL_LENGTH__) ? __EXTFLASH_TOTAL_LENGTH__ - (__CONFIGFLASH_LENGTH__ + __SAVEFLASH_LENGTH__) : 1024K - (__CONFIGFLASH_LENGTH__ + __SAVEFLASH_LENGTH__);
+__SAVEFLASH_START__ = __EXTFLASH_START__ + __EXTFLASH_LENGTH__;
+__SAVEFLASH_END__   = __SAVEFLASH_START__ + __SAVEFLASH_LENGTH__;
+__CONFIGFLASH_START__ = __SAVEFLASH_START__ + __SAVEFLASH_LENGTH__;
+__CONFIGFLASH_END__   = __CONFIGFLASH_START__ + __CONFIGFLASH_LENGTH__;
 
 /* Specify the memory areas */
 MEMORY
 {
-  ITCMRAM  (xrw) : ORIGIN = 0x00000000, LENGTH = 64K
-  DTCMRAM  (xrw) : ORIGIN = 0x20000000, LENGTH = 128K
-  RAM      (xrw) : ORIGIN = 0x24000000, LENGTH = 1024K
-  FLASH    (xr ) : ORIGIN = 0x8000000,  LENGTH = 128K
-  EXTFLASH (xr ) : ORIGIN = 0x90000000, LENGTH = 1024K
+  /* RAM */
+  NULLPTR  (xrw) : ORIGIN = 0x00000000, LENGTH =   __NULLPTR_LENGTH__
+  ITCMRAM  (xrw) : ORIGIN = 0x00000000 + __NULLPTR_LENGTH__, LENGTH = __ITCMRAM_LENGTH__ - __NULLPTR_LENGTH__
+  DTCMRAM  (xrw) : ORIGIN = 0x20000000, LENGTH =  __DTCMRAM_LENGTH__
+  RAM_UC   (xrw) : ORIGIN = __RAM_UC_START__, LENGTH = __RAM_UC_LENGTH__
+  RAM      (xrw) : ORIGIN = __RAM_CORE_START__, LENGTH = __RAM_CORE_LENGTH__
+  AHBRAM   (xrw) : ORIGIN = 0x30000000, LENGTH =  __AHBRAM_LENGTH__
+
+  /* FLASH */
+  FLASH    (xr ) : ORIGIN = 0x08000000,          LENGTH =  __FLASH_LENGTH__
+  EXTFLASH (xr ) : ORIGIN = __EXTFLASH_START__,  LENGTH = __EXTFLASH_LENGTH__
+  SAVEFLASH(xr ) : ORIGIN = __SAVEFLASH_START__, LENGTH = __SAVEFLASH_LENGTH__
+  CONFIGFLASH(xr ) : ORIGIN = __CONFIGFLASH_START__, LENGTH = __CONFIGFLASH_LENGTH__
 }
+
 
 /* Define output sections */
 SECTIONS
 {
-  .lcd :
+  /* The startup code goes first into FLASH */
+  .isr_vector :
   {
+    __flash_start__ = .;
+    . = ALIGN(4);
+    KEEP(*(.isr_vector)) /* Startup code */
+    . = ALIGN(4);
+  } >RAM_UC
+
+  ._itcram :
+  {
+    __itcram_start__ = .;
+    . = ALIGN(4);
+    *(.itcram_data)
+    . = ALIGN(4);
+    *(.itcram_text)
+    . = ALIGN(4);
+  } > ITCMRAM
+
+  /* Copied from flash to ram at boot */
+  _sitcram_hot = LOADADDR(._itcram_hot);
+  ._itcram_hot :
+  {
+    __itcram_hot_start__ = .;
+    . = ALIGN(4);
+    *(.itcram_hot_data)
+    . = ALIGN(4);
+    *(.itcram_hot_text)
+    . = ALIGN(4);
+    __itcram_hot_end__ = .;
+    __itcram_end__ = .;
+  } >ITCMRAM AT> EXTFLASH
+
+  /* Uncached and unbuffered memory for the LCD framebuffers */
+  ._ram_uc (NOLOAD) :
+  {
+    __ram_uc_start__ = .;
     . = ALIGN(4);
     *(.lcd1)
-    *(.lcd2)
-    *(.audio)
     . = ALIGN(4);
-  }  > RAM
+    *(.lcd2)
+    . = ALIGN(4);
+    __ram_uc_end__ = .;
+  } > RAM_UC
+
+  /* Data that should be copied from extflash to axiram */
+  /* used by the startup to initialize data */
+  _siramdata = LOADADDR(._ram_exec);
+  __extflash_start__ = LOADADDR(._ram_exec);
+  ._ram_exec :
+  {
+    __ram_start__ = .;
+    __ram_exec_start__ = .;
+    . = ALIGN(4);
+    _sram_text = .;
+    *(.ram_text)
+    _eram_text = .;
+    _sram_data = .;
+    *(.ram_data)
+    _eram_data = .;
+    __ram_exec_end__ = .;
+  } >RAM AT> EXTFLASH
 
   ._extflash :
   {
     . = ALIGN(4);
-    _extflash = .;       /* define a global symbols to point at the external flash */
-  } >EXTFLASH
+    __extflash_text_start__ = .;
+    *(.extflash_text)
+    . = ALIGN(4);
+    __extflash_text_end__ = .;
+    __extflash_data_start__ = .;
+    . = ALIGN(4);
+    *(.extflash_data)
+    . = ALIGN(4);
+    __extflash_data_end__ = .;
+  } > EXTFLASH
 
-  /* The startup code goes first into FLASH */
-  .isr_vector :
+  ._saveflash (NOLOAD) :
+  {
+    __saveflash_start__ = .;
+    *(.saveflash)
+    __saveflash_end__ = .;
+  } > SAVEFLASH
+
+  ._configflash (NOLOAD):
+  {
+    . = ALIGN(4K);
+    __configflash_start__ = .;
+    *(.configflash)
+    __configflash_end__ = .;
+  } > CONFIGFLASH
+
+  ._ram (NOLOAD) :
   {
     . = ALIGN(4);
-    KEEP(*(.isr_vector)) /* Startup code */
+    *(.ram_data)
+    __ram_end__ = .;
+  } > RAM
+
+  ._ahbram (NOLOAD) :
+  {
+    __ahbram_start__ = .;
     . = ALIGN(4);
-  } >FLASH
+    *(.audio)
+    . = ALIGN(4);
+    *(.ahb)
+    . = ALIGN(4);
+    __ahbram_end__ = .;
+  } > AHBRAM
 
   /* The program code and other data goes into FLASH */
   .text :
@@ -109,7 +237,7 @@ SECTIONS
 
     . = ALIGN(4);
     _etext = .;        /* define a global symbols at end of code */
-  } >FLASH
+  } >RAM
 
   /* Constant data goes into FLASH */
   .rodata :
@@ -118,35 +246,35 @@ SECTIONS
     *(.rodata)         /* .rodata sections (constants, strings, etc.) */
     *(.rodata*)        /* .rodata* sections (constants, strings, etc.) */
     . = ALIGN(4);
-  } >FLASH
+  } >RAM
 
   .ARM.extab   : { *(.ARM.extab* .gnu.linkonce.armextab.*) } >FLASH
   .ARM : {
     __exidx_start = .;
     *(.ARM.exidx*)
     __exidx_end = .;
-  } >FLASH
+  } >RAM
 
   .preinit_array     :
   {
     PROVIDE_HIDDEN (__preinit_array_start = .);
     KEEP (*(.preinit_array*))
     PROVIDE_HIDDEN (__preinit_array_end = .);
-  } >FLASH
+  } >RAM
   .init_array :
   {
     PROVIDE_HIDDEN (__init_array_start = .);
     KEEP (*(SORT(.init_array.*)))
     KEEP (*(.init_array*))
     PROVIDE_HIDDEN (__init_array_end = .);
-  } >FLASH
+  } >RAM
   .fini_array :
   {
     PROVIDE_HIDDEN (__fini_array_start = .);
     KEEP (*(SORT(.fini_array.*)))
     KEEP (*(.fini_array*))
     PROVIDE_HIDDEN (__fini_array_end = .);
-  } >FLASH
+  } >RAM
 
   /* used by the startup to initialize data */
   _sidata = LOADADDR(.data);
@@ -154,6 +282,8 @@ SECTIONS
   /* Initialized data sections goes into RAM, load LMA copy after code */
   .data : 
   {
+    __dtcram_start__ = .;
+
     . = ALIGN(4);
     _sdata = .;        /* create a global symbol at data start */
     *(.data)           /* .data sections */
@@ -161,8 +291,13 @@ SECTIONS
 
     . = ALIGN(4);
     _edata = .;        /* define a global symbol at data end */
-  } >DTCMRAM AT> FLASH
+  } >DTCMRAM AT> RAM
 
+  ._flash_end :
+  {
+    . = ALIGN(4);
+    __flash_end__ = .;
+  }
   
   /* Uninitialized data section */
   . = ALIGN(4);
@@ -180,18 +315,40 @@ SECTIONS
     __bss_end__ = _ebss;
   } >DTCMRAM
 
-  /* User_heap_stack section, used to check that there is enough RAM left */
-  ._user_heap_stack :
+  ._persistent (NOLOAD) :
+  {
+    . = ALIGN(8);
+    *(.persistent)
+    . = ALIGN(8);
+  } >DTCMRAM
+
+  ._user_heap :
   {
     . = ALIGN(8);
     PROVIDE ( end = . );
     PROVIDE ( _end = . );
-    . = . + _Min_Heap_Size;
-    . = . + _Min_Stack_Size;
-    . = ALIGN(8);
+    . = ALIGN(16);
+    _heap_start = . ;
+    . = . + _Heap_Size;
+    . = ALIGN(16);
+    _heap_end = . ;
   } >DTCMRAM
 
-  
+  /* User_heap_stack section, used to check that there is enough RAM left */
+  ._user_stack :
+  {
+    /* Pad the unused area between the last symbol and the start of the redzone */
+    __dtc_padding_start__ = .;
+    . = . + __DTCMRAM_LENGTH__ - (_Min_Stack_Size + _Stack_Redzone_Size) - (__dtc_padding_start__ - __dtcram_start__);
+    __dtc_padding_end__ = .;
+
+    _stack_redzone = .;
+    . = . + _Stack_Redzone_Size;
+    _stack_bottom = .;
+    . = . + _Min_Stack_Size;
+    _stack_top = .;
+    __dtcram_end__ = .;
+  } >DTCMRAM
 
   /* Remove information from the standard libraries */
   /DISCARD/ :
@@ -203,5 +360,3 @@ SECTIONS
 
   .ARM.attributes 0 : { *(.ARM.attributes) }
 }
-
-

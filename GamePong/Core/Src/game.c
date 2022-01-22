@@ -105,7 +105,7 @@ void update_player(uint16_t *buf) {
 		game_init();
 	}
 	if (buttons & B_POWER) {
-		NVIC_SystemReset();
+		HAL_NVIC_SystemReset();
 	}
 	LCD_FillRect(buf, p1_x, p1_y, p1_width, p1_height, LCD_COLOR_WHITE);
 }

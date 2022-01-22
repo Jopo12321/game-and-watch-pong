@@ -9,11 +9,15 @@
 
 extern ADC_HandleTypeDef hadc1;
 extern SAI_HandleTypeDef hsai_BlockA1;
+extern RTC_HandleTypeDef hrtc;
 
 extern uint16_t audiobuffer[48000];
 
 #define randint(max, min) 	(rand() % (max + 1 - min) + min)
 #define randsing()			(rand() > RAND_MAX/2 ? -1: 1)
+
+RTC_TimeTypeDef sTime = { 0 };
+RTC_DateTypeDef sDate = { 0 };
 
 int score_p1 = 0;
 int score_p2 = 0;
@@ -43,9 +47,11 @@ int ball_y;
 void game_init(void) {
 	uint16_t *buf = lcd_get_active_buffer();
 	draw_background(buf);
+	HAL_RTC_GetTime(&hrtc, &sTime, RTC_FORMAT_BIN);
+	HAL_RTC_GetDate(&hrtc, &sDate, RTC_FORMAT_BIN);
 	HAL_ADC_Start(&hadc1);
 	HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY);
-	srand(HAL_ADC_GetValue(&hadc1));
+	srand(HAL_ADC_GetValue(&hadc1) ^ sTime.SubSeconds);
 	ball_xspeed = randsing() * ball_speed;
 	ball_yspeed = randsing() * ball_speed;
 	ball_x = 160;

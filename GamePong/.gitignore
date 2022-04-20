@@ -1,7 +1,11 @@
 /Debug/
 /Drivers/
 *launch
-/Debug (RAM)/
-/Debug (ROM)/
-/Release (RAM)/
-/Release (ROM)/
+/Debug (RAM)/Core/
+/Debug (RAM)/Drivers/
+/Debug (ROM)/Core/
+/Debug (ROM)/Drivers/
+/Release (RAM)/Core/
+/Release (RAM)/Drivers/
+/Release (ROM)/Core/
+/Release (ROM)/Drivers/

@@ -1,6 +1,6 @@
 #include "graphics.h"
 #include "lcd.h"
-#include "fonts.h"
+#include "font/fonts.h"
 #include "main.h"
 
 #define ABS(X)		((X) > 0 ? (X) : -(X))

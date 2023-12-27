@@ -2,7 +2,7 @@
 #define INC_GRAPHICS_H_
 
 #include <stdint.h>
-#include "fonts.h"
+#include "font/fonts.h"
 
 typedef struct {
 	int16_t X;

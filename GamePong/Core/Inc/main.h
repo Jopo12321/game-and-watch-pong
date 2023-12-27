@@ -80,6 +80,7 @@ void Error_Handler(void);
 #define BTN_Up_GPIO_Port GPIOD
 #define BTN_B_Pin GPIO_PIN_5
 #define BTN_B_GPIO_Port GPIOD
+
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */

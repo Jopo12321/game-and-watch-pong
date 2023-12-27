@@ -1,6 +1,6 @@
+#include <font/fonts.h>
 #include "graphics.h"
-#include "lcd.h"
-#include "font/fonts.h"
+#include "gw_hardware/gw_lcd.h"
 #include "main.h"
 
 #define ABS(X)		((X) > 0 ? (X) : -(X))
@@ -13,6 +13,18 @@ extern DMA2D_HandleTypeDef hdma2d;
 static sFONT *font = &LCD_DEFAULT_FONT;
 static uint16_t font_color = 0xFFFF;
 static uint16_t font_bcolor = 0x0000;
+
+uint16_t color_array[] = {
+LCD_COLOR_BLUE, LCD_COLOR_GREEN, LCD_COLOR_RED, LCD_COLOR_CYAN,
+LCD_COLOR_MAGENTA, LCD_COLOR_YELLOW,
+LCD_COLOR_LIGHTBLUE, LCD_COLOR_LIGHTGREEN, LCD_COLOR_LIGHTRED,
+LCD_COLOR_LIGHTCYAN,
+LCD_COLOR_LIGHTMAGENTA, LCD_COLOR_LIGHTYELLOW, LCD_COLOR_DARKBLUE,
+LCD_COLOR_DARKGREEN,
+LCD_COLOR_DARKRED, LCD_COLOR_DARKCYAN, LCD_COLOR_DARKMAGENTA,
+LCD_COLOR_DARKYELLOW, LCD_COLOR_WHITE,
+LCD_COLOR_LIGHTGRAY, LCD_COLOR_GRAY, LCD_COLOR_DARKGRAY,
+LCD_COLOR_BROWN, LCD_COLOR_ORANGE };
 
 static void DrawChar(uint16_t *buf, uint16_t Xpos, uint16_t Ypos,
 		const uint8_t *c);
@@ -98,6 +110,9 @@ sFONT* LCD_GetFont(void) {
  * @retval RGB pixel color
  */
 uint16_t LCD_ReadPixel(uint16_t *buf, uint16_t Xpos, uint16_t Ypos) {
+	if (PPOS(Xpos, Ypos) > GW_LCD_WIDTH * GW_LCD_HEIGHT) {
+		return 0;
+	}
 	return buf[PPOS(Xpos, Ypos)];
 }
 
@@ -109,6 +124,9 @@ uint16_t LCD_ReadPixel(uint16_t *buf, uint16_t Xpos, uint16_t Ypos) {
  * @retval None
  */
 void LCD_DrawPixel(uint16_t *buf, uint16_t Xpos, uint16_t Ypos, uint16_t pixel) {
+	if (PPOS(Xpos, Ypos) > GW_LCD_WIDTH * GW_LCD_HEIGHT) {
+		return;
+	}
 	buf[PPOS(Xpos, Ypos)] = pixel;
 }
 
@@ -722,7 +740,6 @@ static void DrawChar(uint16_t *buf, uint16_t Xpos, uint16_t Ypos,
 
 /**
  * @brief  Fills buffer.
- * @param  LayerIndex: layer index
  * @param  pDst: output color
  * @param  xSize: buffer width
  * @param  ySize: buffer height

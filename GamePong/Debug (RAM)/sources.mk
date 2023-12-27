@@ -23,7 +23,8 @@ C_DEPS :=
 # Every subdirectory with source files must be described here
 SUBDIRS := \
 Core/Inc/font \
+Core/Inc/gw_hardware \
 Core/Src \
 Core/Startup \
-Drivers/STM32H7xx_HAL_Driver/Src \
+Drivers/STM32H7xx_HAL_Driver \
 

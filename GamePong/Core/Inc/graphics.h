@@ -1,8 +1,8 @@
 #ifndef INC_GRAPHICS_H_
 #define INC_GRAPHICS_H_
 
+#include <font/fonts.h>
 #include <stdint.h>
-#include "font/fonts.h"
 
 typedef struct {
 	int16_t X;
@@ -40,6 +40,8 @@ typedef enum {
 #define LCD_COLOR_BLACK         0x0000
 #define LCD_COLOR_BROWN         0xA145
 #define LCD_COLOR_ORANGE        0xFD80
+
+extern uint16_t color_array[24];
 
 #define LCD_DEFAULT_FONT        Font12
 

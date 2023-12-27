@@ -7,14 +7,16 @@
 #define GW_LCD_WIDTH  320
 #define GW_LCD_HEIGHT 240
 
-extern uint16_t framebuffer1[GW_LCD_WIDTH * GW_LCD_HEIGHT]  __attribute__((section (".lcd1"))) __attribute__ ((aligned (16)));
-extern uint16_t framebuffer2[GW_LCD_WIDTH * GW_LCD_HEIGHT]  __attribute__((section (".lcd2"))) __attribute__ ((aligned (16)));
+extern uint16_t framebuffer1[GW_LCD_WIDTH * GW_LCD_HEIGHT] __attribute__((section (".lcd1"))) __attribute__ ((aligned (16)));
+extern uint16_t framebuffer2[GW_LCD_WIDTH * GW_LCD_HEIGHT] __attribute__((section (".lcd2"))) __attribute__ ((aligned (16)));
 typedef uint16_t pixel_t;
 
 // 0 => framebuffer1
 // 1 => framebuffer2
 extern uint32_t active_framebuffer;
 
+static const uint8_t backlightLevels[] = { 128, 130, 133, 139, 149, 162, 178,
+		198, 222, 255 };
 
 void lcd_deinit(SPI_HandleTypeDef *spi);
 void lcd_init(SPI_HandleTypeDef *spi, LTDC_HandleTypeDef *ltdc);

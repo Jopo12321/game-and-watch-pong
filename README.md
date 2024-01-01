@@ -12,28 +12,28 @@ I added many features.
 
 # Controls
 
-###In menu:
-(UP, DOWN, LEFT, RIGHT)		- Navigating menu
-(A)       					- Confirm option
-(B)       					- Return (will keep changes)
-(POWER)						- Restarting console / Return from homebrew  
+### In menu:
+(UP, DOWN, LEFT, RIGHT)		- Navigating menu  
+(A)       					- Confirm option  
+(B)       					- Return (will keep changes)  
+(POWER)						- Restarting console / Return from homebrew    
 
 ### In-game:
-(UP, DOWN)					- Controlling player
-(GAME)       				- Open in-game menu
-(POWER)						- Restarting console / Return from homebrew  
+(UP, DOWN)					- Controlling player  
+(GAME)       				- Open in-game menu  
+(POWER)						- Restarting console / Return from homebrew    
 
 # Pictures
 
-![Pong game main menu](/gaw1.png) 
+![Pong game main menu](/gaw1.jpg) 
   
-![Pong game settings menu](/gaw2.png)  
+![Pong game settings menu](/gaw2.jpg)  
 
-![Pong game](/gaw3.png)  
+![Pong game](/gaw3.jpg)  
 
-![Pong game game over screen](/gaw4.png)  
+![Pong game game over screen](/gaw4.jpg)  
 
-![Pong game demo](/gaw5.png)  
+![Pong game demo](/gaw5.jpg)  
 
 # Credits
 

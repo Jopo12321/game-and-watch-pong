@@ -1,0 +1,8 @@
+/.settings/
+/Debug/
+/Drivers/
+*launch
+/Debug (RAM)/
+/Debug (ROM)/
+/Release (RAM)/
+/Release (ROM)/

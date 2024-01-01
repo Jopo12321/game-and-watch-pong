@@ -9,7 +9,7 @@
 #include "gw_hardware/gw_bq24072.h"
 #include "gw_hardware/gw_rtc.h"
 #include "gw_hardware/gw_audio.h"
-#include "graphics.h"
+#include "graphics/graphics.h"
 
 #define randint(max, min) 	(rand() % (max + 1 - min) + min)
 #define randsing()			(rand() > RAND_MAX/2 ? -1: 1)

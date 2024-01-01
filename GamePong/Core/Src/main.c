@@ -32,9 +32,9 @@
 #include "gw_hardware/gw_bq24072.h"
 #include "gw_hardware/gw_rtc.h"
 #include "gw_hardware/gw_audio.h"
-#include "graphics.h"
+#include "graphics/graphics.h"
 
-#include "game.h"
+#include "game/game.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/

@@ -13,6 +13,7 @@ extern DMA2D_HandleTypeDef hdma2d;
 static sFONT *font = &LCD_DEFAULT_FONT;
 static uint16_t font_color = 0xFFFF;
 static uint16_t font_bcolor = 0x0000;
+static uint8_t font_scale = 0x01;
 
 uint16_t color_array[] = {
 LCD_COLOR_BLUE, LCD_COLOR_GREEN, LCD_COLOR_RED, LCD_COLOR_CYAN,
@@ -27,7 +28,7 @@ LCD_COLOR_LIGHTGRAY, LCD_COLOR_GRAY, LCD_COLOR_DARKGRAY,
 LCD_COLOR_BROWN, LCD_COLOR_ORANGE };
 
 static void DrawChar(uint16_t *buf, uint16_t Xpos, uint16_t Ypos,
-		const uint8_t *c);
+		const uint8_t *c, uint8_t scale);
 static void FillBuffer(void *pDst, uint32_t xSize, uint32_t ySize,
 		uint32_t OffLine, uint16_t ColorIndex);
 
@@ -104,6 +105,24 @@ sFONT* LCD_GetFont(void) {
 }
 
 /**
+ * @brief  Sets the Text Scale.
+ * @param  scale: the scale of font to be used
+ * @retval None
+ */
+void LCD_SetFontScale(uint8_t scale) {
+	font_scale = scale;
+}
+
+/**
+ * @brief  Gets the Text Scale.
+ * @param  None
+ * @retval Font scale
+ */
+uint8_t LCD_GetFontScale(void) {
+	return font_scale;
+}
+
+/**
  * @brief  Reads Pixel.
  * @param  Xpos: the X position
  * @param  Ypos: the Y position
@@ -145,8 +164,8 @@ void LCD_Clear(uint16_t *buf, uint16_t color) {
  * @retval None
  */
 void LCD_ClearStringLine(uint16_t *buf, uint16_t Line) {
-	LCD_FillRect(buf, 0, (Line * font->Height), LCD_GetXSize(), font->Height,
-			font_bcolor);
+	LCD_FillRect(buf, 0, (Line * font_scale * font->Height), LCD_GetXSize(),
+			font_scale * font->Height, font_bcolor);
 }
 
 /**
@@ -156,7 +175,8 @@ void LCD_ClearStringLine(uint16_t *buf, uint16_t Line) {
  * @retval None
  */
 void LCD_DisplayStringAtLine(uint16_t *buf, uint16_t Line, uint8_t *ptr) {
-	LCD_DisplayStringAt(buf, 0, (Line * font->Height), ptr, LEFT_MODE);
+	LCD_DisplayStringAt(buf, 0, (Line * font_scale * font->Height), ptr,
+			LEFT_MODE);
 }
 
 /**
@@ -175,18 +195,21 @@ void LCD_DisplayStringAt(uint16_t *buf, uint16_t X, uint16_t Y, uint8_t *pText,
 		Text_AlignModeTypdef mode) {
 	uint16_t refcolumn = 1, i = 0;
 	uint32_t size = 0, xsize = 0;
+	uint32_t mod_size = 0;
 	uint8_t *ptr = pText;
+	uint32_t font_width = font->Width * font_scale;
 
 	/* Get the text size */
 	while (*ptr++)
 		size++;
 
 	/* Characters number per line */
-	xsize = (LCD_GetXSize() / font->Width);
+	xsize = (LCD_GetXSize() / font_width);
+	mod_size = LCD_GetXSize() % font_width;
 
 	switch (mode) {
 	case CENTER_MODE: {
-		refcolumn = X + ((xsize - size) * font->Width) / 2;
+		refcolumn = X + ((xsize - size) * font_width + mod_size) / 2;
 		break;
 	}
 	case LEFT_MODE: {
@@ -194,7 +217,7 @@ void LCD_DisplayStringAt(uint16_t *buf, uint16_t X, uint16_t Y, uint8_t *pText,
 		break;
 	}
 	case RIGHT_MODE: {
-		refcolumn = X + ((xsize - size) * font->Width);
+		refcolumn = X + ((xsize - size) * font_width) + mod_size;
 		break;
 	}
 	default: {
@@ -205,11 +228,11 @@ void LCD_DisplayStringAt(uint16_t *buf, uint16_t X, uint16_t Y, uint8_t *pText,
 
 	/* Send the string character by character on LCD */
 	while ((*pText != 0)
-			& (((LCD_GetXSize() - (i * font->Width)) & 0xFFFF) >= font->Width)) {
+			& (((LCD_GetXSize() - (i * font_width)) & 0xFFFF) >= font_width)) {
 		/* Display one character on LCD */
 		LCD_DisplayChar(buf, refcolumn, Y, *pText);
 		/* Decrement the column position by 16 */
-		refcolumn += font->Width;
+		refcolumn += font_width;
 		/* Point on the next character */
 		pText++;
 		i++;
@@ -225,7 +248,8 @@ void LCD_DisplayStringAt(uint16_t *buf, uint16_t X, uint16_t Y, uint8_t *pText,
  */
 void LCD_DisplayChar(uint16_t *buf, uint16_t Xpos, uint16_t Ypos, uint8_t Ascii) {
 	DrawChar(buf, Xpos, Ypos,
-			&font->table[(Ascii - ' ') * font->Height * ((font->Width + 7) / 8)]);
+			&font->table[(Ascii - ' ') * font->Height * ((font->Width + 7) / 8)],
+			font_scale);
 }
 
 /**
@@ -697,7 +721,7 @@ void LCD_FillEllipse(uint16_t *buf, uint16_t Xpos, uint16_t Ypos,
  * @retval None
  */
 static void DrawChar(uint16_t *buf, uint16_t Xpos, uint16_t Ypos,
-		const uint8_t *c) {
+		const uint8_t *c, uint8_t scale) {
 	uint32_t i = 0, j = 0;
 	uint16_t height, width;
 	uint8_t offset;
@@ -729,12 +753,16 @@ static void DrawChar(uint16_t *buf, uint16_t Xpos, uint16_t Ypos,
 
 		for (j = 0; j < width; j++) {
 			if (line & (1 << (width - j + offset - 1))) {
-				LCD_DrawPixel(buf, (Xpos + j), Ypos, font_color);
+				//LCD_DrawPixel(buf, (Xpos + j), Ypos, font_color);
+				LCD_FillRect(buf, (Xpos + j * scale), Ypos, scale, scale,
+						font_color);
 			} else {
-				LCD_DrawPixel(buf, (Xpos + j), Ypos, font_bcolor);
+				//LCD_DrawPixel(buf, (Xpos + j), Ypos, font_bcolor);
+				LCD_FillRect(buf, (Xpos + j * scale), Ypos, scale, scale,
+						font_bcolor);
 			}
 		}
-		Ypos++;
+		Ypos = Ypos + scale;
 	}
 }
 

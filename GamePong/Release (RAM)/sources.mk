@@ -23,6 +23,8 @@ C_DEPS :=
 # Every subdirectory with source files must be described here
 SUBDIRS := \
 Core/Inc/font \
+Core/Inc/game \
+Core/Inc/graphics \
 Core/Inc/gw_hardware \
 Core/Src \
 Core/Startup \

@@ -54,6 +54,8 @@ uint16_t LCD_GetTextColor(void);
 uint16_t LCD_GetBackColor(void);
 void LCD_SetFont(sFONT *pFonts);
 sFONT* LCD_GetFont(void);
+void LCD_SetFontScale(uint8_t scale);
+uint8_t LCD_GetFontScale(void);
 
 uint16_t LCD_ReadPixel(uint16_t *buf, uint16_t Xpos, uint16_t Ypos);
 void LCD_DrawPixel(uint16_t *buf, uint16_t Xpos, uint16_t Ypos, uint16_t pixel);

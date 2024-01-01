@@ -13,6 +13,8 @@ RM := rm -rf
 -include Core/Startup/subdir.mk
 -include Core/Src/subdir.mk
 -include Core/Inc/gw_hardware/subdir.mk
+-include Core/Inc/graphics/subdir.mk
+-include Core/Inc/game/subdir.mk
 -include Core/Inc/font/subdir.mk
 -include objects.mk
 

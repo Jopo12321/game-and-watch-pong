@@ -1,5 +1,5 @@
 
-GamePong_v2.elf:     file format elf32-littlearm
+GamePong.elf:     file format elf32-littlearm
 
 Sections:
 Idx Name          Size      VMA       LMA       File off  Algn
